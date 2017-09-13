@@ -1,0 +1,49 @@
+# config context path to "/" by setting an empty string
+server:
+  contextPath:
+
+# JACKSON
+spring:
+  jackson:
+    serialization:
+      INDENT_OUTPUT: true
+  datasource:
+    ## H2
+    url: jdbc:h2:mem:mydb
+    
+    ## MYSQL
+    #url: jdbc:mysql://localhost/database_name
+    #username: root
+    #password: 
+    #driver-class-name: com.mysql.jdbc.Driver
+    
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+     
+
+
+jwt:
+  header: Authorization
+  secret: tasksSecret
+  expiration: 604800
+  route:
+    authentication:
+      path: auth
+      refresh: refresh
+  key:
+    public: mweLcae8f5eYWJ6r6vYU6dZ6YTNAVVhjd0D6lbw0Lja0vIaxLvLsTj-pTa3rdHeWFPgpPolUqT2sjIa3ktMx-7FQAve_JkKZyRjQoTaT6MtjoSZCJxu40WUoZ49XSoGJqgDSXVsvTPeaXAdctlDX3jXgDGcpUoWiXUyj6c9AtMizBNxe9nrI-CFBye6wob9VIiFAMqQgFrat6g6GSaOvyZOvm7YfLIOnnSSpwjWk9u0Plpys6iGRIOuYaNN8NA85VNDGSWDh8NpHAyb9hvFnYN4X4fW8P0mm9vVrM49Ue_yciIZzXAgaYXa_xiLKwuiVCdvEyCelgZQnVA7nzZGfZw
+    private: QsC150NdY-cnfwkbZ3l8Oc_TNCU4T0dW1NOS0oSOR1Pg8MhiZJ_O5kZ9JOh9WNHhOrg8MiQ54wGeWYfsZXkwrXqExDJfCR9mTnOz6aaxe2yQQqRRmbtTEj6nbigHYxpx51ShP_dyX4bB3VyCLDKVMKYsCcslvNWzus60SYmnB_AzoVdyuolPrsG8G7qIhtbvITpNOqt4RWhUILfiFPkT6QMs37SprSsouD_m8OSZF0mUER6ijGPYOkOfh4IKHuqmvJv9GZO5mgHiRkOpfXZM4r3rWxKFDpNSe_tn_hwUvJgQAid9ZexIMy3419DszxFDYUNyoDwffvcUo3LLvYWuWQ
+      
+
+#logging:
+#  level:
+#    org.springframework:
+#      security: DEBUG
