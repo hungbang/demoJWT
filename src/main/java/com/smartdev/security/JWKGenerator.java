@@ -2,14 +2,18 @@ package com.smartdev.security;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
+import java.util.List;
 import java.util.UUID;
 
 public class JWKGenerator {
@@ -41,5 +45,9 @@ public class JWKGenerator {
         return rsaKey.toRSAPublicKey();
     }
 
+    public JWKSet getJWKSet() throws IOException, ParseException {
+        JWKSet jwkSet = JWKSet.load(new File(ClassLoader.getSystemResource("keystore.json").getPath()));
+        return jwkSet;
+    }
 
 }

@@ -1,38 +1,29 @@
 package com.smartdev.security.controller;
 
-import java.security.interfaces.RSAPublicKey;
-import java.text.ParseException;
-import java.util.Base64;
-import java.util.List;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.RSAEncrypter;
-import com.nimbusds.jwt.EncryptedJWT;
-import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jose.Algorithm;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.*;
 import com.smartdev.security.JWKGenerator;
 import com.smartdev.security.JwtTokenUtil;
 import com.smartdev.security.model.Car;
-import com.smartdev.security.model.KeyStoreData;
 import com.smartdev.security.repository.CarRepository;
 import com.smartdev.security.repository.KeyStoreDataRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
-import net.minidev.json.JSONValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import sun.security.rsa.RSAPublicKeyImpl;
-import sun.security.util.DerValue;
+import org.springframework.web.bind.annotation.*;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.security.*;
+import java.text.ParseException;
+import java.util.Base64;
+import java.util.List;
 
 
 @RestController
@@ -55,21 +46,35 @@ public class CarRestController {
     private CarRepository carRepository;
 
     @RequestMapping(method = RequestMethod.GET)
-    public String findAll(HttpServletRequest request) throws ParseException, JOSEException, JsonProcessingException {
-        String authToken = request.getHeader(this.tokenHeader);
-        KeyStoreData keyStoreData = keyStoreDataRepository.findOne(Long.parseLong("1"));
-        String keyString = keyStoreData.getDescription();
-        JWKGenerator jwkGenerator = new JWKGenerator();
-        RSAPublicKey publicKey = jwkGenerator.rsaPublicKey(keyString);
-        JWEEncrypter rsaEncrypter = new RSAEncrypter(publicKey);
+    public String findAll(HttpServletRequest request) throws ParseException, JOSEException, IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException {
+        //get RSAKey
+
         List<Car> cars = carRepository.findAll();
-        JSONObject jsonObject = new JSONObject();
         ObjectMapper objectMapper = new ObjectMapper();
-        Payload payload = new Payload(objectMapper.writeValueAsString(cars));
-//        JWEObject jweObject = new JWEObject(header, payload);
-//        jweObject.encrypt(rsaEncrypter);
-//        String result = jweObject.serialize();
-        return null;
+        String result = objectMapper.writeValueAsString(cars);
+//        String result = "hello world";
+        //prepare keystore
+        JWKGenerator jwkGenerator = new JWKGenerator();
+        JWKSet jwkSet =     jwkGenerator.getJWKSet();
+        RSAKey rsaKey = (RSAKey)jwkSet.getKeyByKeyId("2708");
+        KeyPair keyPair = new KeyPair(rsaKey.toPublicKey(), rsaKey.toPrivateKey());
+
+        //to encrypt data
+        Cipher encrypter = Cipher.getInstance("RSA");
+        encrypter.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
+        encrypter.update(result.getBytes());
+        String encrypted = Base64.getEncoder().encodeToString(encrypter.doFinal());
+        System.out.println(encrypted);
+
+        Cipher decrypter = Cipher.getInstance("RSA");
+        decrypter.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
+        decrypter.update(Base64.getDecoder().decode(encrypted));
+        String decrypted = new String(decrypter.doFinal());
+        System.out.println("jajaja: "+ decrypted);
+
+        System.out.println("this is data encrypted: "+ encrypted);
+
+        return encrypted;
     }
     
 	@RequestMapping(method = RequestMethod.GET, value = "/{carId}")
