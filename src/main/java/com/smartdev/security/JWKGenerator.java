@@ -1,7 +1,7 @@
 package com.smartdev.security;
 
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 
@@ -13,7 +13,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
-import java.util.List;
 import java.util.UUID;
 
 public class JWKGenerator {
@@ -45,9 +44,23 @@ public class JWKGenerator {
         return rsaKey.toRSAPublicKey();
     }
 
-    public JWKSet getJWKSet() throws IOException, ParseException {
+    public KeyPair getKeyPair() throws IOException, ParseException {
         JWKSet jwkSet = JWKSet.load(new File(ClassLoader.getSystemResource("keystore.json").getPath()));
-        return jwkSet;
+        JWKGenerator jwkGenerator = new JWKGenerator();
+        RSAKey rsaKey = (RSAKey)jwkSet.getKeyByKeyId("2708");
+        try {
+            KeyPair keyPair = new KeyPair(rsaKey.toPublicKey(), rsaKey.toPrivateKey());
+            return keyPair;
+        } catch (JOSEException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public RSAKey getRSAKey() throws IOException, ParseException {
+        JWKSet jwkSet = JWKSet.load(new File(ClassLoader.getSystemResource("keystore.json").getPath()));
+        JWKGenerator jwkGenerator = new JWKGenerator();
+        return (RSAKey)jwkSet.getKeyByKeyId("2708");
     }
 
 }

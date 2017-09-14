@@ -10,6 +10,8 @@ import com.smartdev.security.JwtTokenUtil;
 import com.smartdev.security.model.Car;
 import com.smartdev.security.repository.CarRepository;
 import com.smartdev.security.repository.KeyStoreDataRepository;
+import com.smartdev.security.service.JOSEServiceHandler;
+import com.smartdev.security.service.JWEDataHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +47,15 @@ public class CarRestController {
     @Autowired
     private CarRepository carRepository;
 
+    @Autowired
+    private JWKGenerator generator;
+
+    @Autowired
+    private JWEDataHelper jweDataHelper;
+
+    @Autowired
+    private JOSEServiceHandler joseServiceHandler;
+
     @RequestMapping(method = RequestMethod.GET)
     public String findAll(HttpServletRequest request) throws ParseException, JOSEException, IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException {
         //get RSAKey
@@ -54,48 +65,40 @@ public class CarRestController {
         String result = objectMapper.writeValueAsString(cars);
 //        String result = "hello world";
         //prepare keystore
-        JWKGenerator jwkGenerator = new JWKGenerator();
-        JWKSet jwkSet =     jwkGenerator.getJWKSet();
-        RSAKey rsaKey = (RSAKey)jwkSet.getKeyByKeyId("2708");
-        KeyPair keyPair = new KeyPair(rsaKey.toPublicKey(), rsaKey.toPrivateKey());
+//        KeyPair keyPair = generator.getKeyPair();
+//        //to encrypt data
+//        String encrypted = jweDataHelper.encryptData(keyPair, result);
+//        String decrypted = jweDataHelper.decryptData(keyPair, encrypted);
+//        System.out.println("jajaja: " + decrypted);
+//        System.out.println("this is data encrypted: " + encrypted);
 
-        //to encrypt data
-        Cipher encrypter = Cipher.getInstance("RSA");
-        encrypter.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
-        encrypter.update(result.getBytes());
-        String encrypted = Base64.getEncoder().encodeToString(encrypter.doFinal());
-        System.out.println(encrypted);
+        String encrypted = joseServiceHandler.encrypt(result);
 
-        Cipher decrypter = Cipher.getInstance("RSA");
-        decrypter.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
-        decrypter.update(Base64.getDecoder().decode(encrypted));
-        String decrypted = new String(decrypter.doFinal());
-        System.out.println("jajaja: "+ decrypted);
-
-        System.out.println("this is data encrypted: "+ encrypted);
-
+        String decrypted = joseServiceHandler.decrypt(encrypted);
+        System.out.println("encrypted: "+encrypted);
+        System.out.println("decrypted: "+decrypted);
         return encrypted;
     }
-    
-	@RequestMapping(method = RequestMethod.GET, value = "/{carId}")
+
+    @RequestMapping(method = RequestMethod.GET, value = "/{carId}")
     public Car findOne(@PathVariable Long carId) {
         return carRepository.findOne(carId);
     }
-    
-	@RequestMapping(method = RequestMethod.POST)
+
+    @RequestMapping(method = RequestMethod.POST)
     public Car add(@RequestBody Car car) {
         return carRepository.save(car);
     }
 
-	@RequestMapping(method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT)
     public Car update(@RequestBody Car car) {
         return carRepository.save(car);
     }
-	
-	@RequestMapping(method = RequestMethod.DELETE, value = "/{carId}")
+
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{carId}")
     public void delete(@PathVariable Long carId) {
         carRepository.delete(carId);
     }
-	
+
 }
 
