@@ -24,7 +24,7 @@
 		<java.version>1.8</java.version>
         <jjwt.version>0.7.0</jjwt.version>
 	</properties>
-    
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-rest</artifactId>
-        </dependency>        
+        </dependency>
 		<dependency>
             <groupId>org.springframework.mobile</groupId>
             <artifactId>spring-mobile-device</artifactId>
@@ -59,7 +59,7 @@
 		    <groupId>com.h2database</groupId>
 		    <artifactId>h2</artifactId>
 		    <scope>runtime</scope>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -69,7 +69,7 @@
 	        <groupId>org.springframework.boot</groupId>
 	        <artifactId>spring-boot-devtools</artifactId>
 	        <optional>true</optional>
-	    </dependency>  		
+	    </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
@@ -82,6 +82,21 @@
 			<artifactId>nimbus-jose-jwt</artifactId>
 			<version>5.1</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.jboss.resteasy/jose-jwt -->
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>jose-jwt</artifactId>
+			<version>3.1.4.Final</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk16 -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk16</artifactId>
+			<version>1.46</version>
+		</dependency>
+
 
 	</dependencies>
 
