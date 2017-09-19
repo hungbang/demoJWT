@@ -4,10 +4,14 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.zip.GZIPOutputStream;
 
 public class JWEDataHelper {
 
@@ -52,5 +56,21 @@ public class JWEDataHelper {
             e.printStackTrace();
         }
         return "";
+    }
+
+
+    public static String dataValue(Object o){
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        String dataValue = "";
+        try {
+            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipOutputStream);
+            objectOutputStream.writeObject(o);
+            objectOutputStream.flush();
+            dataValue = new String(org.apache.commons.codec.binary.Base64.encodeBase64(outputStream.toByteArray()));
+        } catch (IOException e) {
+            return "";
+        }
+        return dataValue;
     }
 }

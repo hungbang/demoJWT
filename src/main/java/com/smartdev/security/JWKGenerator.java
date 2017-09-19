@@ -1,10 +1,13 @@
 package com.smartdev.security;
 
+import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyPair;
@@ -48,6 +51,7 @@ public class JWKGenerator {
         JWKSet jwkSet = JWKSet.load(new File(ClassLoader.getSystemResource("keystore.json").getPath()));
         JWKGenerator jwkGenerator = new JWKGenerator();
         RSAKey rsaKey = (RSAKey)jwkSet.getKeyByKeyId("2708");
+
         try {
             KeyPair keyPair = new KeyPair(rsaKey.toPublicKey(), rsaKey.toPrivateKey());
             return keyPair;
@@ -61,6 +65,22 @@ public class JWKGenerator {
         JWKSet jwkSet = JWKSet.load(new File(ClassLoader.getSystemResource("keystore.json").getPath()));
         JWKGenerator jwkGenerator = new JWKGenerator();
         return (RSAKey)jwkSet.getKeyByKeyId("2708");
+    }
+
+    public byte[] generateAESKey() throws NoSuchAlgorithmException {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        int cekLength = EncryptionMethod.A128GCM.cekBitLength();
+        keyGenerator.init(cekLength);
+        SecretKey secretKey = keyGenerator.generateKey();
+        return secretKey.getEncoded();
+    }
+
+
+    public SecretKey getAESKey() throws NoSuchAlgorithmException {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        int cekLength = EncryptionMethod.A128GCM.cekBitLength();
+        keyGenerator.init(cekLength);
+        return  keyGenerator.generateKey();
     }
 
 }
