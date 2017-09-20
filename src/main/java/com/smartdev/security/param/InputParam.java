@@ -1,6 +1,8 @@
 package com.smartdev.security.param;
 
-public class InputParam {
+import java.io.Serializable;
+
+public class InputParam implements Serializable{
     private String type;
     private String value;
 

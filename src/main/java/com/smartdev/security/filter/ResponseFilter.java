@@ -6,9 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.util.Base64URL;
 import com.smartdev.security.JWKGenerator;
-import com.smartdev.security.service.JWEDataHelper;
+import com.smartdev.security.exception.EncryptException;
 import com.smartdev.security.service.JWEServiceHandler;
-import com.smartdev.security.service.JWSServiceHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -17,35 +16,36 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
-import java.io.ByteArrayOutputStream;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.lang.annotation.Annotation;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import org.apache.commons.codec.binary.Base64;
-
-import java.security.SecureRandom;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.zip.GZIPOutputStream;
 
-//@ControllerAdvice
+@ControllerAdvice
 public class ResponseFilter implements ResponseBodyAdvice {
 
     @Autowired
     private JWEServiceHandler jWEServiceHandler;
-    @Autowired
-    private JWSServiceHandler jwsServiceHandler;
 
     private JWKGenerator generator = new JWKGenerator();
 
     @Override
     public boolean supports(MethodParameter methodParameter, Class aClass) {
         System.out.println("========supports=========");
-        return true;
+        /**
+         * check if controller have a annotation is JsonFilter, then continue handle
+         * or not then will exit
+         */
+        List<Annotation> annotations = Arrays.asList(methodParameter.getMethodAnnotations());
+        return annotations.stream().anyMatch(annotation -> annotation.annotationType().equals(JsonFilter.class));
     }
 
     @Override
@@ -55,12 +55,11 @@ public class ResponseFilter implements ResponseBodyAdvice {
         try {
             dataValue = mapper.writeValueAsString(o);
         } catch (JsonProcessingException e) {
-            System.out.println("Json Processing Exception."+ e.getMessage());
+            throw new EncryptException("Can not parse object to json");
         }
         System.out.println(dataValue);
         if(dataValue.isEmpty()){
-            System.out.println("Can not encript data.");
-            return o;
+           throw new EncryptException("Data is body is empty");
         }
         try {
             SecretKey secretKey = generator.getAESKey();
@@ -71,20 +70,22 @@ public class ResponseFilter implements ResponseBodyAdvice {
             return jweObject.serialize();
 
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("No Such Algorithm Exception. "+ e.getMessage());
+            System.out.println("No Such Algorithm Exception.");
         } catch (ParseException e) {
-            System.out.println("Parse Exception. "+ e.getMessage());
+            System.out.println("Parse Exception.");
         } catch (IOException e) {
-            System.out.println("IO Exception. "+ e.getMessage());
+            System.out.println("IO Exception.");
         } catch (JOSEException e) {
-            System.out.println("JOSE Exception. "+ e.getMessage());
+            System.out.println("JOSE Exception.");
         } catch (BadPaddingException e) {
-            e.printStackTrace();
+            System.out.println("Bad Padding Exception. "+ e.getMessage());
         } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
+            System.out.println("Illegal Block Size Exception. "+ e.getMessage());
         } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
+            System.out.println("No Such Padding Exception. "+ e.getMessage());
         } catch (InvalidKeyException e) {
+            System.out.println("Invalid Key Exception. "+ e.getMessage());
+        } catch (InvalidAlgorithmParameterException e) {
             e.printStackTrace();
         }
         return null;

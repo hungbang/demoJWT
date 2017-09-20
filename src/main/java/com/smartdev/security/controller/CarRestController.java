@@ -1,12 +1,9 @@
 package com.smartdev.security.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
+import com.smartdev.security.filter.JsonFilter;
 import com.smartdev.security.model.Car;
 import com.smartdev.security.repository.CarRepository;
-import com.smartdev.security.service.JWEServiceHandler;
-import com.smartdev.security.service.JWSServiceHandler;
-import com.smartdev.security.service.RestEZServiceHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -38,10 +35,8 @@ public class CarRestController {
     private CarRepository carRepository;
 
 
-    @Autowired
-    private RestEZServiceHandler restEZServiceHandler;
-
     @RequestMapping(method = RequestMethod.GET)
+    @JsonFilter
     public ResponseEntity<?> findAll(HttpServletRequest request) throws ParseException, JOSEException, IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException {
         List<Car> cars = carRepository.findAll();
         return ResponseEntity.ok(cars);

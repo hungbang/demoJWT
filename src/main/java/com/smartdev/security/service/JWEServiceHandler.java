@@ -8,11 +8,9 @@ import com.nimbusds.jose.util.Base64URL;
 import com.smartdev.security.JWKGenerator;
 
 import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.Security;
+import java.security.*;
 import java.text.ParseException;
 
 public class JWEServiceHandler {
@@ -54,13 +52,32 @@ public class JWEServiceHandler {
         return cipher.doFinal(o.getEncoded());
     }
 
-    public byte[] encryptContentWithAES(String json, SecretKey secretKey) throws NoSuchAlgorithmException, IOException, ParseException, JOSEException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    public byte[] encryptContentWithAES(String json, SecretKey secretKey) throws NoSuchAlgorithmException, IOException, ParseException, JOSEException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
         Provider bc = BouncyCastleProviderSingleton.getInstance();
         Security.addProvider(bc);
-
+        byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        IvParameterSpec ivspec = new IvParameterSpec(iv);
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
         return cipher.doFinal(json.getBytes());
+    }
+
+
+    public byte[] decryptCEKwithRSA(Base64URL o) throws NoSuchAlgorithmException, IOException, ParseException, JOSEException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        Security.addProvider(BouncyCastleProviderSingleton.getInstance());
+        RSAKey rsaKey = generator.getRSAKey();
+        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        cipher.init(Cipher.DECRYPT_MODE, rsaKey.toRSAPrivateKey());
+        return cipher.doFinal(o.decode());
+    }
+
+    public byte[] decryptContentWithAES(Base64URL o, SecretKey secretKey) throws NoSuchAlgorithmException, IOException, ParseException, JOSEException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
+        Provider bc = BouncyCastleProviderSingleton.getInstance();
+        Security.addProvider(bc);
+        byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        IvParameterSpec ivspec = new IvParameterSpec(iv);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);
+        return cipher.doFinal(o.decode());
     }
 }
