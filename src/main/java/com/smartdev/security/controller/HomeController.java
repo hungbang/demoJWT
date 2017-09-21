@@ -1,10 +1,8 @@
 package com.smartdev.security.controller;
 
 import com.nimbusds.jose.*;
-import com.smartdev.security.filter.JsonFilter;
-import com.smartdev.security.filter.RequestAdvice;
+import com.smartdev.security.filter.annotation.RequestBodyFilter;
 import com.smartdev.security.model.Car;
-import com.smartdev.security.param.InputParam;
 import com.smartdev.security.service.JWEServiceHandler;
 import com.smartdev.security.service.JWSServiceHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +18,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @RestController
@@ -32,7 +29,7 @@ public class HomeController {
     private JWSServiceHandler jwsServiceHandler;
 
     @PostMapping("/decrypt")
-    @RequestAdvice
+    @RequestBodyFilter
     public String decrypt(@RequestBody List<Car> datas) throws NoSuchPaddingException, NoSuchAlgorithmException, IOException, ParseException, JOSEException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         System.out.println(String.join("==", datas.stream().map(car -> car.getDescription()).collect(Collectors.toList())));
         return String.join("==", datas.stream().map(car -> car.getDescription()).collect(Collectors.toList()));

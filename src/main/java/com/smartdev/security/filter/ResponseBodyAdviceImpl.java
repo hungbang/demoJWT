@@ -7,6 +7,7 @@ import com.nimbusds.jose.*;
 import com.nimbusds.jose.util.Base64URL;
 import com.smartdev.security.JWKGenerator;
 import com.smartdev.security.exception.EncryptException;
+import com.smartdev.security.filter.annotation.ResponseBodyFilter;
 import com.smartdev.security.service.JWEServiceHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
@@ -30,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @ControllerAdvice
-public class ResponseFilter implements ResponseBodyAdvice {
+public class ResponseBodyAdviceImpl implements ResponseBodyAdvice {
 
     @Autowired
     private JWEServiceHandler jWEServiceHandler;
@@ -41,11 +42,11 @@ public class ResponseFilter implements ResponseBodyAdvice {
     public boolean supports(MethodParameter methodParameter, Class aClass) {
         System.out.println("========supports=========");
         /**
-         * check if controller have a annotation is JsonFilter, then continue handle
+         * check if controller have a annotation is ResponseBodyFilter, then continue handle
          * or not then will exit
          */
         List<Annotation> annotations = Arrays.asList(methodParameter.getMethodAnnotations());
-        return annotations.stream().anyMatch(annotation -> annotation.annotationType().equals(JsonFilter.class));
+        return annotations.stream().anyMatch(annotation -> annotation.annotationType().equals(ResponseBodyFilter.class));
     }
 
     @Override
@@ -58,8 +59,8 @@ public class ResponseFilter implements ResponseBodyAdvice {
             throw new EncryptException("Can not parse object to json");
         }
         System.out.println(dataValue);
-        if(dataValue.isEmpty()){
-           throw new EncryptException("Data is body is empty");
+        if (dataValue.isEmpty()) {
+            throw new EncryptException("Data is body is empty");
         }
         try {
             SecretKey secretKey = generator.getAESKey();
@@ -71,23 +72,31 @@ public class ResponseFilter implements ResponseBodyAdvice {
 
         } catch (NoSuchAlgorithmException e) {
             System.out.println("No Such Algorithm Exception.");
+            throw new EncryptException("Error occur when encrypt data.");
         } catch (ParseException e) {
             System.out.println("Parse Exception.");
+            throw new EncryptException("Error occur when encrypt data.");
         } catch (IOException e) {
             System.out.println("IO Exception.");
+            throw new EncryptException("Error occur when encrypt data.");
         } catch (JOSEException e) {
             System.out.println("JOSE Exception.");
+            throw new EncryptException("Error occur when encrypt data.");
         } catch (BadPaddingException e) {
-            System.out.println("Bad Padding Exception. "+ e.getMessage());
+            System.out.println("Bad Padding Exception. " + e.getMessage());
+            throw new EncryptException("Error occur when encrypt data.");
         } catch (IllegalBlockSizeException e) {
-            System.out.println("Illegal Block Size Exception. "+ e.getMessage());
+            System.out.println("Illegal Block Size Exception. " + e.getMessage());
+            throw new EncryptException("Error occur when encrypt data.");
         } catch (NoSuchPaddingException e) {
-            System.out.println("No Such Padding Exception. "+ e.getMessage());
+            System.out.println("No Such Padding Exception. " + e.getMessage());
+            throw new EncryptException("Error occur when encrypt data.");
         } catch (InvalidKeyException e) {
-            System.out.println("Invalid Key Exception. "+ e.getMessage());
+            System.out.println("Invalid Key Exception. " + e.getMessage());
+            throw new EncryptException("Error occur when encrypt data.");
         } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
+            throw new EncryptException("Error occur when encrypt data.");
         }
-        return null;
+//        throw new EncryptException("Error occur when encrypt data.");
     }
 }

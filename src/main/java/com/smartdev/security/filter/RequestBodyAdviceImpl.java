@@ -1,13 +1,15 @@
 package com.smartdev.security.filter;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.util.Base64URL;
+import com.smartdev.security.exception.EncryptException;
+import com.smartdev.security.filter.annotation.RequestBodyFilter;
 import com.smartdev.security.param.InputParam;
 import com.smartdev.security.service.JWEServiceHandler;
 import org.apache.commons.io.IOUtils;
+import org.bouncycastle.openssl.EncryptionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
@@ -32,7 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @ControllerAdvice
-public class RequestFilter implements RequestBodyAdvice {
+public class RequestBodyAdviceImpl implements RequestBodyAdvice {
 
 
     @Autowired
@@ -42,11 +44,11 @@ public class RequestFilter implements RequestBodyAdvice {
     public boolean supports(MethodParameter methodParameter, Type type, Class<? extends HttpMessageConverter<?>> aClass) {
         System.out.println("support Request body advice");
         /**
-         * check if controller have a annotation is JsonFilter, then continue handle
+         * check if controller have a annotation is ResponseBodyFilter, then continue handle
          * or not then will exit
          */
         List<Annotation> annotations = Arrays.asList(methodParameter.getMethodAnnotations());
-        return annotations.stream().anyMatch(annotation -> annotation.annotationType().equals(RequestAdvice.class));
+        return annotations.stream().anyMatch(annotation -> annotation.annotationType().equals(RequestBodyFilter.class));
     }
 
     @Override
@@ -80,23 +82,23 @@ public class RequestFilter implements RequestBodyAdvice {
                 return new MappingJacksonInputMessage(inputStream1, httpInputMessage.getHeaders());
             }
         } catch (ParseException e) {
-            e.printStackTrace();
+            throw new EncryptException("Error occur when decrypt data.");
         } catch (JOSEException e) {
-            e.printStackTrace();
+            throw new EncryptException("Error occur when decrypt data.");
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            throw new EncryptException("Error occur when decrypt data.");
         } catch (InvalidKeyException e) {
-            e.printStackTrace();
+            throw new EncryptException("Error occur when decrypt data.");
         } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
+            throw new EncryptException("Error occur when decrypt data.");
         } catch (BadPaddingException e) {
-            e.printStackTrace();
+            throw new EncryptException("Error occur when decrypt data.");
         } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
+            throw new EncryptException("Error occur when decrypt data.");
         } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
+            throw new EncryptException("Error occur when decrypt data.");
         }
-        return httpInputMessage;
+        throw new EncryptException("Error occur when decrypt data.");
     }
 
     @Override
